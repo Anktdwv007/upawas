@@ -27,10 +27,10 @@ export const Footer: React.FC<FooterProps> = ({
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
                 <Building2 className="w-5 h-5" />
               </div>
-              <span>Awaas<span className="text-amber-400">UP</span></span>
+              <span>UPAwas<span className="text-amber-400">.com</span></span>
             </div>
             <p className="text-slate-400 leading-relaxed">
-              Uttar Pradesh's #1 Zillow-inspired real estate discovery platform. Enabling smart homebuyers & investors with UP RERA title verification, BhuNaksha land checking, and UP Bigha/Gaj conversions.
+              Uttar Pradesh's #1 Zillow-inspired real estate discovery platform at upawas.com. Enabling smart homebuyers & investors with UP RERA title verification, BhuNaksha land checking, and UP Bigha/Gaj conversions.
             </p>
           </div>
 
@@ -101,7 +101,7 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
 
         <div className="pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <p>© 2026 AwaasUP Real Estate Portal. All rights reserved.</p>
+          <p>© 2026 UPAwas.com - Uttar Pradesh Real Estate Portal. All rights reserved.</p>
           <p className="flex items-center justify-center gap-1 text-slate-400">
             Crafted for Uttar Pradesh Consumers
           </p>

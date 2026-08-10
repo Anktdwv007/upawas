@@ -67,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-extrabold text-xl sm:text-2xl tracking-tight bg-gradient-to-r from-blue-900 via-indigo-800 to-blue-600 dark:from-white dark:to-slate-200 bg-clip-text text-transparent">
-                  Awaas<span className="text-amber-500">UP</span>
+                  UPAwas<span className="text-amber-500">.com</span>
                 </span>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                   RERA UP
