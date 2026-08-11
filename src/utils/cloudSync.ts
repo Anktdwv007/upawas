@@ -1,15 +1,7 @@
 import type { Property } from '../types';
 
-const GLOBAL_CLOUD_ENDPOINT = 'https://api.jsonbin.io/v3/b';
 const PUBLIC_SYNC_KEY = 'awaas_up_cloud_properties_v3';
-
-/**
- * Global Real-Time Cloud Database Storage
- * Ensures properties posted by any user on any device are visible to ALL visitors globally.
- */
-
-// Memory Cache of User Uploaded Properties across sessions
-let cloudPropertiesCache: Property[] = [];
+const SERVERLESS_API_URL = '/api/properties';
 
 export const getCloudPropertiesFromStorage = (): Property[] => {
   try {
@@ -23,9 +15,8 @@ export const getCloudPropertiesFromStorage = (): Property[] => {
 export const saveCloudPropertiesToStorage = (userProps: Property[]) => {
   try {
     localStorage.setItem(PUBLIC_SYNC_KEY, JSON.stringify(userProps));
-    cloudPropertiesCache = userProps;
   } catch (e) {
-    console.warn('Could not save to cloud storage cache:', e);
+    console.warn('Could not save to local storage cache:', e);
   }
 };
 
@@ -34,6 +25,13 @@ export const publishGlobalProperty = async (newProp: Property): Promise<boolean>
     const existing = getCloudPropertiesFromStorage();
     const updated = [newProp, ...existing.filter((p) => p.id !== newProp.id)];
     saveCloudPropertiesToStorage(updated);
+
+    // Call Vercel Serverless API to persist globally across all devices
+    fetch(SERVERLESS_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ property: newProp }),
+    }).catch((err) => console.warn('Serverless Sync Notice:', err));
 
     // Broadcast across open browser tabs & sessions
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -45,6 +43,21 @@ export const publishGlobalProperty = async (newProp: Property): Promise<boolean>
   } catch (err) {
     console.error('Cloud Sync Error:', err);
     return false;
+  }
+};
+
+export const fetchRemoteGlobalProperties = async (): Promise<Property[]> => {
+  try {
+    const res = await fetch(SERVERLESS_API_URL);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data && data.properties && Array.isArray(data.properties)) {
+      saveCloudPropertiesToStorage(data.properties);
+      return data.properties;
+    }
+    return [];
+  } catch {
+    return [];
   }
 };
 

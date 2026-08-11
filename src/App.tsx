@@ -10,6 +10,7 @@ import {
   addLead,
   incrementPropertyViews,
 } from './utils/storage';
+import { fetchRemoteGlobalProperties, publishGlobalProperty, syncAllProperties } from './utils/cloudSync';
 import { Header } from './components/Header';
 import { HeroSearch } from './components/HeroSearch';
 import { FilterBar } from './components/FilterBar';
@@ -192,12 +193,32 @@ export function App() {
     });
   };
 
+  // Fetch Global Remote Cloud Properties on Mount & Poll
+  useEffect(() => {
+    fetchRemoteGlobalProperties().then((remoteProps) => {
+      if (remoteProps && remoteProps.length > 0) {
+        setProperties((prev) => syncAllProperties(prev));
+      }
+    });
+
+    const interval = setInterval(() => {
+      fetchRemoteGlobalProperties().then((remoteProps) => {
+        if (remoteProps && remoteProps.length > 0) {
+          setProperties((prev) => syncAllProperties(prev));
+        }
+      });
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleAddProperty = (newProperty: Property) => {
     const updatedProp = currentUser ? { ...newProperty, ownerId: currentUser.id } : newProperty;
+    publishGlobalProperty(updatedProp);
     setProperties((prev) => [updatedProp, ...prev]);
     setIsPostPropertyOpen(false);
     setSelectedProperty(updatedProp);
-    addToast('success', 'Property Published!', 'Your listing is live for lakhs of buyers across UP & NCR.');
+    addToast('success', 'Property Published Live!', 'Your listing is live for lakhs of buyers across UP & NCR.');
   };
 
   const handleUpdatePropertyStatus = (propertyId: string, status: 'Ready to Move' | 'Sold') => {
