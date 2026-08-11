@@ -34,46 +34,111 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLoginSuccess })
     onLoginSuccess(newUser);
   };
 
-  const handleAdminLogin = () => {
-    const adminUser: UserType = {
-      id: 'admin-001',
-      name: 'UPAwas Official Admin',
-      email: 'admin@upawas.com',
-      phone: '+91 99188 00000',
-      role: 'admin',
-      agencyName: 'UPAwas Portal Administration',
-      verified: true,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-    };
-    setCurrentUserSession(adminUser);
-    onLoginSuccess(adminUser);
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [adminPin, setAdminPin] = useState('');
+  const [adminError, setAdminError] = useState('');
+
+  const handleVerifyAdminPin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminPin.trim() === 'UPAWAS@2026' || adminPin.trim() === 'admin123') {
+      const adminUser: UserType = {
+        id: 'admin-001',
+        name: 'UPAwas Official Admin',
+        email: 'admin@upawas.com',
+        phone: '+91 99188 00000',
+        role: 'admin',
+        agencyName: 'UPAwas Portal Administration',
+        verified: true,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      };
+      setCurrentUserSession(adminUser);
+      onLoginSuccess(adminUser);
+    } else {
+      setAdminError('❌ Incorrect Secret Admin Passcode! Access Denied.');
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-5">
         
-        {/* Quick Admin Auto-Login Banner */}
-        <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-indigo-500/10 border border-amber-500/30 flex items-center justify-between gap-2 shadow-sm">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-black text-amber-900 dark:text-amber-300">
-              <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
-              <span>Site Owner / Portal Admin?</span>
+        {/* Protected Admin Access Banner */}
+        {!isAdminMode && (
+          <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-indigo-500/10 border border-amber-500/30 flex items-center justify-between gap-2 shadow-sm">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs font-black text-amber-900 dark:text-amber-300">
+                <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>Site Owner / Portal Admin?</span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Protected password login for audit panel.
+              </p>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              1-Click Admin access to fraud audit center.
-            </p>
+            <button
+              type="button"
+              onClick={() => setIsAdminMode(true)}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs shadow-md transition transform hover:scale-105"
+            >
+              🔒 Admin Password Login
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleAdminLogin}
-            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs shadow-md transition transform hover:scale-105"
-          >
-            👑 Admin Login
-          </button>
-        </div>
+        )}
 
-        {/* Header */}
+        {isAdminMode ? (
+          <form onSubmit={handleVerifyAdminPin} className="space-y-4 pt-2">
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-300">
+              <div className="flex items-center gap-2 font-black text-sm mb-1">
+                <ShieldCheck className="w-5 h-5 text-amber-500" />
+                <span>Protected Admin Portal Access</span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Enter your secret master password to access UPAwas fraud audit controls.
+              </p>
+            </div>
+
+            {adminError && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold">
+                {adminError}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-slate-600 dark:text-slate-400 mb-1 font-bold text-xs">
+                Secret Admin Master Passcode
+              </label>
+              <input
+                type="password"
+                required
+                autoFocus
+                placeholder="Enter admin passcode (e.g. UPAWAS@2026)"
+                value={adminPin}
+                onChange={(e) => {
+                  setAdminPin(e.target.value);
+                  setAdminError('');
+                }}
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsAdminMode(false)}
+                className="flex-1 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+              >
+                Back to User Login
+              </button>
+              <button
+                type="submit"
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs shadow-lg transition"
+              >
+                Authenticate Admin
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-600/20">
@@ -214,6 +279,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLoginSuccess })
             </p>
           )}
         </div>
+          </>
+        )}
 
       </div>
     </div>
