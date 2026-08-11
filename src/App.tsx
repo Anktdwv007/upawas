@@ -25,6 +25,7 @@ import { WishlistDrawer } from './components/WishlistDrawer';
 import { AuthModal } from './components/AuthModal';
 import { SellerDashboardModal } from './components/SellerDashboardModal';
 import { BankLoanModal } from './components/BankLoanModal';
+import { ReportPropertyModal } from './components/ReportPropertyModal';
 import { Toast } from './components/Toast';
 import { Footer } from './components/Footer';
 import { Scale, Heart, Sparkles, Building2, CheckCircle2 } from 'lucide-react';
@@ -123,6 +124,7 @@ export function App() {
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSellerDashboardOpen, setIsSellerDashboardOpen] = useState(false);
+  const [reportingProperty, setReportingProperty] = useState<Property | null>(null);
   const [isBankLoansOpen, setIsBankLoansOpen] = useState(false);
 
   // Filter Handlers
@@ -430,7 +432,27 @@ export function App() {
         }}
         onShareProperty={handleShareProperty}
         onBookSiteVisit={handleBookSiteVisit}
+        onOpenReportModal={(prop) => setReportingProperty(prop)}
       />
+
+      {reportingProperty && (
+        <ReportPropertyModal
+          property={reportingProperty}
+          onClose={() => setReportingProperty(null)}
+          onSubmitReport={(propId, reason) => {
+            setProperties((prev) =>
+              prev.map((p) =>
+                p.id === propId ? { ...p, reportedCount: (p.reportedCount || 0) + 1 } : p
+              )
+            );
+            addToast(
+              'warning',
+              'Listing Flagged for Audit',
+              `Report registered for reason: "${reason}". Admin team will verify legal title.`
+            );
+          }}
+        />
+      )}
 
       {isLandConverterOpen && (
         <UPLandConverterModal onClose={() => setIsLandConverterOpen(false)} />

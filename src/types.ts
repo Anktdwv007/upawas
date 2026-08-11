@@ -80,10 +80,12 @@ export interface Property {
     avatar: string;
   };
   
-  // Analytics & Viewers Tracking
+  // Analytics, Safety & Viewers Tracking
   viewsCount?: number;
   viewsToday?: number;
   inquiriesCount?: number;
+  reportedCount?: number;
+  verifiedPhone?: boolean;
 
   createdAt: string;
 }

@@ -19,6 +19,9 @@ import {
   Share2,
   Printer,
   Table,
+  Flag,
+  ShieldAlert,
+  ExternalLink,
 } from 'lucide-react';
 import type { Property, UnitSystem } from '../types';
 import {
@@ -40,6 +43,7 @@ interface PropertyDetailModalProps {
   onOpenBankLoans: () => void;
   onShareProperty: (property: Property) => void;
   onBookSiteVisit: (property: Property, name: string, phone: string, date: string) => void;
+  onOpenReportModal?: (property: Property) => void;
 }
 
 export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
@@ -52,6 +56,7 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
   onOpenBankLoans,
   onShareProperty,
   onBookSiteVisit,
+  onOpenReportModal,
 }) => {
   if (!property) return null;
 
@@ -108,6 +113,17 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {onOpenReportModal && (
+              <button
+                onClick={() => onOpenReportModal(property)}
+                className="p-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 transition flex items-center gap-1.5 text-xs font-bold"
+                title="Report Fake or Fraudulent Listing"
+              >
+                <Flag className="w-4 h-4 text-rose-500" />
+                <span className="hidden sm:inline">Report Fake</span>
+              </button>
+            )}
+
             <button
               onClick={() => onShareProperty(property)}
               className="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-blue-500 transition"
@@ -143,6 +159,27 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
+          {/* UPAwas Buyer Anti-Scam Protection Warning Banner */}
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-medium flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <ShieldAlert className="w-5 h-5 text-amber-500 shrink-0" />
+              <span>
+                <strong>UPAwas Buyer Safety Advisory:</strong> Never transfer advance token money or visiting fees via UPI before physically visiting the site and verifying legal title.
+              </span>
+            </div>
+            {property.reraApproved && (
+              <a
+                href="https://www.up-rera.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-sm transition flex items-center gap-1.5"
+              >
+                <span>Check UP-RERA</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+
           {/* Title & Price Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
