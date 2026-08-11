@@ -12,6 +12,7 @@ import {
   PlusCircle,
   TrendingUp,
   MessageSquare,
+  LogOut,
 } from 'lucide-react';
 import type { Property, User, Lead, UnitSystem } from '../types';
 import { formatArea, formatPriceINR } from '../utils/conversions';
@@ -26,6 +27,7 @@ interface SellerDashboardModalProps {
   onUpdatePropertyStatus: (propertyId: string, status: 'Ready to Move' | 'Sold') => void;
   onUpdateLeadStatus: (leadId: string, status: 'Pending' | 'Contacted' | 'Completed') => void;
   onSelectProperty: (property: Property) => void;
+  onLogout?: () => void;
 }
 
 export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
@@ -38,6 +40,7 @@ export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
   onUpdatePropertyStatus,
   onUpdateLeadStatus,
   onSelectProperty,
+  onLogout,
 }) => {
   const [activeTab, setActiveTab] = useState<'my-properties' | 'leads'>('my-properties');
 
@@ -82,6 +85,17 @@ export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
               <PlusCircle className="w-4 h-4" />
               <span>Post New Listing</span>
             </button>
+
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-bold text-xs transition"
+                title="Sign Out of Account"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            )}
 
             <button
               onClick={onClose}

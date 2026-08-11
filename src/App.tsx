@@ -261,6 +261,13 @@ export function App() {
     setSelectedProperty(updatedItem);
   };
 
+  const handleLogout = () => {
+    setCurrentUserSession(null);
+    setCurrentUser(null);
+    setIsSellerDashboardOpen(false);
+    addToast('info', 'Signed Out', 'You have been successfully signed out.');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 flex flex-col font-sans">
       
@@ -280,6 +287,7 @@ export function App() {
         currentUser={currentUser}
         onOpenAuth={() => setIsAuthOpen(true)}
         onOpenSellerDashboard={() => setIsSellerDashboardOpen(true)}
+        onLogout={handleLogout}
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(!darkMode)}
       />
@@ -486,6 +494,7 @@ export function App() {
           onUpdatePropertyStatus={handleUpdatePropertyStatus}
           onUpdateLeadStatus={handleUpdateLeadStatus}
           onSelectProperty={setSelectedProperty}
+          onLogout={handleLogout}
         />
       )}
 
