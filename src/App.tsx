@@ -350,6 +350,13 @@ export function App() {
         onOpenBankLoans={() => setIsBankLoansOpen(true)}
         currentUser={currentUser}
         onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAdmin={() => {
+          if (currentUser && currentUser.role === 'admin') {
+            setIsSellerDashboardOpen(true);
+          } else {
+            setIsAuthOpen(true);
+          }
+        }}
         onOpenSellerDashboard={() => setIsSellerDashboardOpen(true)}
         onLogout={handleLogout}
         darkMode={darkMode}

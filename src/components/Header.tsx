@@ -34,6 +34,7 @@ interface HeaderProps {
   onOpenBankLoans: () => void;
   currentUser: User | null;
   onOpenAuth: () => void;
+  onOpenAdmin?: () => void;
   onOpenSellerDashboard: () => void;
   onLogout?: () => void;
   darkMode: boolean;
@@ -54,6 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenBankLoans,
   currentUser,
   onOpenAuth,
+  onOpenAdmin,
   onOpenSellerDashboard,
   onLogout,
   darkMode,
@@ -211,12 +213,12 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
 
                   <button
-                    onClick={onOpenAuth}
-                    className="hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/20 text-xs font-black transition"
-                    title="Site Owner Admin Portal"
+                    onClick={onOpenAdmin || onOpenAuth}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-rose-500/10 hover:from-amber-500/20 hover:to-rose-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 text-xs font-black transition shadow-sm"
+                    title="Site Owner Protected Admin Portal"
                   >
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Admin Portal</span>
+                    <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>👑 Admin Portal</span>
                   </button>
                 </div>
               )}

@@ -52,7 +52,9 @@ export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
   onDismissReport,
   onLogout,
 }) => {
-  const [activeTab, setActiveTab] = useState<'my-properties' | 'leads' | 'admin-reports'>('my-properties');
+  const [activeTab, setActiveTab] = useState<'my-properties' | 'leads' | 'admin-reports'>(
+    user.role === 'admin' ? 'admin-reports' : 'my-properties'
+  );
   const pendingReports = reports.filter((r) => r.status === 'Pending');
 
   // Filter properties posted by user (or mock user properties if none posted yet)
