@@ -133,3 +133,66 @@ export const addLead = (lead: Omit<Lead, 'id' | 'createdAt'>): Lead => {
   return newLead;
 };
 
+// Admin Moderation Reports Storage
+const REPORTS_KEY = 'awaas_up_reports_v2';
+
+export const getStoredReports = (): any[] => {
+  try {
+    const raw = localStorage.getItem(REPORTS_KEY);
+    if (!raw) {
+      const mockReports = [
+        {
+          id: 'report-101',
+          propertyId: 'up-prop-1',
+          propertyTitle: 'Skymark Elevate - Luxury 3 BHK High-Rise Apartment',
+          sellerName: 'Suraj Builder',
+          sellerPhone: '+91 98765 43210',
+          reason: 'Fake / Suspiciously Low Price',
+          comments: 'Listed at ₹15 Lakhs when market price is ₹1.45 Cr. Requested Paytm advance.',
+          reportedAt: '2026-08-11',
+          status: 'Pending',
+        },
+        {
+          id: 'report-102',
+          propertyId: 'up-prop-3',
+          propertyTitle: 'Shri Ram Janmabhoomi Enclave Prime Plot',
+          sellerName: 'Ramesh Gupta',
+          sellerPhone: '+91 91234 56789',
+          reason: 'Invalid / Fraud Phone Number',
+          comments: 'Phone number was switched off continuously for 2 days.',
+          reportedAt: '2026-08-10',
+          status: 'Pending',
+        },
+      ];
+      localStorage.setItem(REPORTS_KEY, JSON.stringify(mockReports));
+      return mockReports;
+    }
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+};
+
+export const saveStoredReports = (reports: any[]) => {
+  localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+};
+
+export const addPropertyReport = (report: {
+  propertyId: string;
+  propertyTitle: string;
+  sellerName: string;
+  sellerPhone: string;
+  reason: string;
+  comments: string;
+}): any => {
+  const reports = getStoredReports();
+  const newReport = {
+    ...report,
+    id: 'report-' + Date.now(),
+    reportedAt: new Date().toISOString().split('T')[0],
+    status: 'Pending',
+  };
+  saveStoredReports([newReport, ...reports]);
+  return newReport;
+};
+

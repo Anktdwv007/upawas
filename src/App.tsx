@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { Property, FilterState, UnitSystem, ListingCategory, User, Lead, ToastMessage } from './types';
+import type { Property, FilterState, UnitSystem, ListingCategory, User, Lead, ToastMessage, PropertyReport } from './types';
 import {
   getStoredProperties,
   saveStoredProperties,
@@ -9,6 +9,9 @@ import {
   saveStoredLeads,
   addLead,
   incrementPropertyViews,
+  getStoredReports,
+  saveStoredReports,
+  addPropertyReport,
 } from './utils/storage';
 import { fetchRemoteGlobalProperties, publishGlobalProperty, syncAllProperties } from './utils/cloudSync';
 import { Header } from './components/Header';
@@ -40,6 +43,29 @@ export function App() {
 
   // Persistent Leads
   const [leads, setLeads] = useState<Lead[]>(getStoredLeads);
+
+  // Persistent Reports State
+  const [reports, setReports] = useState<PropertyReport[]>(getStoredReports);
+
+  useEffect(() => {
+    saveStoredReports(reports);
+  }, [reports]);
+
+  const handleRemoveProperty = (propertyId: string) => {
+    setProperties((prev) => prev.filter((p) => p.id !== propertyId));
+    setReports((prev) =>
+      prev.map((r) => (r.propertyId === propertyId ? { ...r, status: 'Removed' } : r))
+    );
+    setSelectedProperty(null);
+    addToast('error', 'Listing Removed', 'Property listing removed from UPAwas platform.');
+  };
+
+  const handleDismissReport = (reportId: string) => {
+    setReports((prev) =>
+      prev.map((r) => (r.id === reportId ? { ...r, status: 'Dismissed' } : r))
+    );
+    addToast('info', 'Report Dismissed', 'Flag cleared for verified listing.');
+  };
 
   // Toast Alerts State
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -475,7 +501,18 @@ export function App() {
         <ReportPropertyModal
           property={reportingProperty}
           onClose={() => setReportingProperty(null)}
-          onSubmitReport={(propId, reason) => {
+          onSubmitReport={(propId, reason, comments) => {
+            if (reportingProperty) {
+              const created = addPropertyReport({
+                propertyId: propId,
+                propertyTitle: reportingProperty.title,
+                sellerName: reportingProperty.agent.name,
+                sellerPhone: reportingProperty.agent.phone,
+                reason,
+                comments,
+              });
+              setReports((prev) => [created, ...prev]);
+            }
             setProperties((prev) =>
               prev.map((p) =>
                 p.id === propId ? { ...p, reportedCount: (p.reportedCount || 0) + 1 } : p
@@ -544,6 +581,7 @@ export function App() {
           user={currentUser}
           properties={properties}
           leads={leads}
+          reports={reports}
           unitSystem={filters.unitSystem}
           onClose={() => setIsSellerDashboardOpen(false)}
           onOpenPostProperty={() => {
@@ -553,6 +591,8 @@ export function App() {
           onUpdatePropertyStatus={handleUpdatePropertyStatus}
           onUpdateLeadStatus={handleUpdateLeadStatus}
           onSelectProperty={setSelectedProperty}
+          onRemoveProperty={handleRemoveProperty}
+          onDismissReport={handleDismissReport}
           onLogout={handleLogout}
         />
       )}

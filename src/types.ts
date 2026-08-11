@@ -137,3 +137,15 @@ export interface ToastMessage {
   title: string;
   message: string;
 }
+
+export interface PropertyReport {
+  id: string;
+  propertyId: string;
+  propertyTitle: string;
+  sellerName: string;
+  sellerPhone: string;
+  reason: string;
+  comments: string;
+  reportedAt: string;
+  status: 'Pending' | 'Dismissed' | 'Removed';
+}

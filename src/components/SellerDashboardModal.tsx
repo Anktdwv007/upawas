@@ -13,20 +13,27 @@ import {
   TrendingUp,
   MessageSquare,
   LogOut,
+  Flag,
+  ShieldAlert,
+  Trash2,
+  ExternalLink,
 } from 'lucide-react';
-import type { Property, User, Lead, UnitSystem } from '../types';
+import type { Property, User, Lead, UnitSystem, PropertyReport } from '../types';
 import { formatArea, formatPriceINR } from '../utils/conversions';
 
 interface SellerDashboardModalProps {
   user: User;
   properties: Property[];
   leads: Lead[];
+  reports?: PropertyReport[];
   unitSystem: UnitSystem;
   onClose: () => void;
   onOpenPostProperty: () => void;
   onUpdatePropertyStatus: (propertyId: string, status: 'Ready to Move' | 'Sold') => void;
   onUpdateLeadStatus: (leadId: string, status: 'Pending' | 'Contacted' | 'Completed') => void;
   onSelectProperty: (property: Property) => void;
+  onRemoveProperty?: (propertyId: string) => void;
+  onDismissReport?: (reportId: string) => void;
   onLogout?: () => void;
 }
 
@@ -34,15 +41,19 @@ export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
   user,
   properties,
   leads,
+  reports = [],
   unitSystem,
   onClose,
   onOpenPostProperty,
   onUpdatePropertyStatus,
   onUpdateLeadStatus,
   onSelectProperty,
+  onRemoveProperty,
+  onDismissReport,
   onLogout,
 }) => {
-  const [activeTab, setActiveTab] = useState<'my-properties' | 'leads'>('my-properties');
+  const [activeTab, setActiveTab] = useState<'my-properties' | 'leads' | 'admin-reports'>('my-properties');
+  const pendingReports = reports.filter((r) => r.status === 'Pending');
 
   // Filter properties posted by user (or mock user properties if none posted yet)
   const myProperties = properties.slice(0, 4);
@@ -130,6 +141,23 @@ export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
           >
             <UserCheck className="w-4 h-4" />
             <span>Buyer Inquiries & Site Visits ({leads.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('admin-reports')}
+            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-t-xl transition border-b-2 ${
+              activeTab === 'admin-reports'
+                ? 'border-rose-600 text-rose-600 dark:text-rose-400 font-extrabold bg-rose-500/5'
+                : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Flag className="w-4 h-4 text-rose-500" />
+            <span>Admin Fraud Audit ({pendingReports.length})</span>
+            {pendingReports.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white font-black text-[10px]">
+                {pendingReports.length}
+              </span>
+            )}
           </button>
         </div>
 
@@ -278,6 +306,91 @@ export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
                         >
                           {lead.status === 'Completed' ? 'Reopen' : 'Mark Done'}
                         </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: ADMIN FRAUD AUDIT */}
+          {activeTab === 'admin-reports' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-900 dark:text-rose-300 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <ShieldAlert className="w-6 h-6 text-rose-500 shrink-0" />
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">
+                      Admin Fraud & Fake Listing Audit Center
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Monitor properties flagged by buyers for invalid phone numbers, fake prices, or token fee scams.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {reports.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-sm font-semibold">
+                  🎉 No fake listing reports! All property listings are 100% clean and verified.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {reports.map((report) => (
+                    <div
+                      key={report.id}
+                      className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-extrabold border border-rose-500/20">
+                            {report.reason}
+                          </span>
+                          <span className="text-xs font-mono text-slate-400">
+                            Reported on {report.reportedAt}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                          {report.propertyTitle}
+                        </h4>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                          <strong>Seller:</strong> {report.sellerName} ({report.sellerPhone})
+                        </p>
+                        {report.comments && (
+                          <p className="text-xs italic text-slate-500 dark:text-slate-400">
+                            "{report.comments}"
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                        <a
+                          href={`tel:${report.sellerPhone}`}
+                          className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs hover:bg-slate-300 dark:hover:bg-slate-600 transition flex items-center gap-1"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Call Seller</span>
+                        </a>
+
+                        {onRemoveProperty && (
+                          <button
+                            onClick={() => onRemoveProperty(report.propertyId)}
+                            className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Remove Fake Listing</span>
+                          </button>
+                        )}
+
+                        {onDismissReport && (
+                          <button
+                            onClick={() => onDismissReport(report.id)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition"
+                          >
+                            Dismiss Flag
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
