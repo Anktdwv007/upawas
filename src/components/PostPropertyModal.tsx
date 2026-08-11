@@ -10,6 +10,7 @@ interface PostPropertyModalProps {
 }
 
 export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, onAddProperty }) => {
+  const [listingCategory, setListingCategory] = useState<'Buy' | 'Rent' | 'Plots' | 'Commercial'>('Buy');
   const [title, setTitle] = useState('');
   const [city, setCity] = useState<'Lucknow' | 'Noida' | 'Greater Noida' | 'Varanasi' | 'Ayodhya' | 'Kanpur' | 'Prayagraj' | 'Agra' | 'Ghaziabad' | 'Gorakhpur'>('Lucknow');
   const [locality, setLocality] = useState('');
@@ -121,17 +122,27 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
           'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
         ];
 
+    const effectiveType: PropertyType =
+      listingCategory === 'Plots'
+        ? 'Plot'
+        : listingCategory === 'Commercial'
+        ? 'Commercial'
+        : type;
+
+    const effectivePriceType = listingCategory === 'Rent' ? 'Rent' : 'Buy';
+
     const newProp: Property = {
       id: 'up-prop-' + Date.now(),
-      title: title || `${type} in ${locality || city}`,
+      title: title || `${effectiveType} in ${locality || city}`,
       location: locality ? `${locality}, ${city}` : city,
       locality: locality || city,
       city,
       price,
-      priceType: 'Buy',
-      type,
-      bhk: type === 'Plot' || type === 'Commercial' ? undefined : bhk,
-      bathrooms: type === 'Plot' || type === 'Commercial' ? undefined : bathrooms,
+      priceType: effectivePriceType,
+      rentPeriod: effectivePriceType === 'Rent' ? 'month' : undefined,
+      type: effectiveType,
+      bhk: effectiveType === 'Plot' || effectiveType === 'Commercial' ? undefined : bhk,
+      bathrooms: effectiveType === 'Plot' || effectiveType === 'Commercial' ? undefined : bathrooms,
       areaSqFt,
       pricePerSqFt: Math.round(price / areaSqFt),
       facing: 'North-East',
@@ -147,7 +158,7 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
       featured: true,
       lat: 26.85 + (Math.random() - 0.5) * 0.5,
       lng: 80.9 + (Math.random() - 0.5) * 0.5,
-      description: description || `Premium ${type} located in prime location of ${locality}, ${city}, Uttar Pradesh. Fully verified legal title and RERA approved.`,
+      description: description || `Premium ${effectiveType} (${listingCategory}) located in prime location of ${locality}, ${city}, Uttar Pradesh. Fully verified legal title and RERA approved.`,
       amenities: ['24/7 Gated Security', 'Power Backup', 'Water Supply', 'Vastu Compliant'],
       agent: {
         name: agentName || 'Property Owner',
@@ -158,6 +169,9 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
         rating: 5.0,
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
       },
+      viewsCount: 1,
+      viewsToday: 1,
+      inquiriesCount: 0,
       createdAt: new Date().toISOString().split('T')[0],
     };
 
@@ -203,6 +217,36 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
         <form onSubmit={handleSubmit} className="space-y-4">
           
           <div className="space-y-4">
+            
+            {/* Listing Purpose / Category Tabs */}
+            <div>
+              <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5">
+                Listing Purpose / Category *
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: 'Buy', label: 'Buy (For Sale)', icon: '🏡' },
+                  { id: 'Rent', label: 'Rent (For Rent)', icon: '🔑' },
+                  { id: 'Plots', label: 'Plots / Bigha Land', icon: '📐' },
+                  { id: 'Commercial', label: 'Commercial', icon: '🏢' },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setListingCategory(cat.id as any)}
+                    className={`py-2 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition border ${
+                      listingCategory === cat.id
+                        ? 'bg-blue-600 text-white border-blue-500 shadow-md ring-2 ring-blue-500/30'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    <span>{cat.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                 Property Title / Headline *
@@ -210,7 +254,15 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
               <input
                 type="text"
                 required
-                placeholder="e.g. Modern 3 BHK Luxury Apartment in Gomti Nagar"
+                placeholder={
+                  listingCategory === 'Rent'
+                    ? 'e.g. Spacious 2 BHK Flat for Rent in Gomti Nagar'
+                    : listingCategory === 'Plots'
+                    ? 'e.g. 1 Bigha Residential Plot near Ram Path'
+                    : listingCategory === 'Commercial'
+                    ? 'e.g. Prime Main Road Commercial Showroom'
+                    : 'e.g. Modern 3 BHK Luxury Apartment in Sector 150'
+                }
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold text-sm outline-none focus:ring-2 focus:ring-blue-500"
@@ -256,9 +308,10 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
                   Type
                 </label>
                 <select
-                  value={type}
+                  value={listingCategory === 'Plots' ? 'Plot' : listingCategory === 'Commercial' ? 'Commercial' : type}
                   onChange={(e) => setType(e.target.value as any)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold"
+                  disabled={listingCategory === 'Plots' || listingCategory === 'Commercial'}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold disabled:opacity-60"
                 >
                   <option value="Apartment">Apartment</option>
                   <option value="Villa">Villa / House</option>
@@ -267,20 +320,31 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
-                  BHK
-                </label>
-                <select
-                  value={bhk}
-                  onChange={(e) => setBhk(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold"
-                >
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <option key={num} value={num}>{num} BHK</option>
-                  ))}
-                </select>
-              </div>
+              {listingCategory !== 'Plots' && listingCategory !== 'Commercial' ? (
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                    BHK
+                  </label>
+                  <select
+                    value={bhk}
+                    onChange={(e) => setBhk(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold"
+                  >
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <option key={num} value={num}>{num} BHK</option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                    Land Unit
+                  </label>
+                  <div className="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-extrabold border border-slate-200 dark:border-slate-700 text-center">
+                    {listingCategory === 'Plots' ? 'Bigha / Gaj / SqFt' : 'Commercial Space'}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
@@ -289,7 +353,7 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
                 <input
                   type="number"
                   required
-                  min={100}
+                  min={50}
                   value={areaSqFt}
                   onChange={(e) => setAreaSqFt(Number(e.target.value))}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold"
@@ -298,12 +362,12 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
 
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
-                  Price (₹ INR) *
+                  {listingCategory === 'Rent' ? 'Monthly Rent (₹ INR/mo) *' : 'Total Price (₹ INR) *'}
                 </label>
                 <input
                   type="number"
                   required
-                  min={100000}
+                  min={1000}
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs font-bold"
