@@ -34,10 +34,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onLoginSuccess })
     onLoginSuccess(newUser);
   };
 
+  const handleAdminLogin = () => {
+    const adminUser: UserType = {
+      id: 'admin-001',
+      name: 'UPAwas Official Admin',
+      email: 'admin@upawas.com',
+      phone: '+91 99188 00000',
+      role: 'admin',
+      agencyName: 'UPAwas Portal Administration',
+      verified: true,
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    };
+    setCurrentUserSession(adminUser);
+    onLoginSuccess(adminUser);
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-6">
+      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-5">
         
+        {/* Quick Admin Auto-Login Banner */}
+        <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-indigo-500/10 border border-amber-500/30 flex items-center justify-between gap-2 shadow-sm">
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-black text-amber-900 dark:text-amber-300">
+              <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+              <span>Site Owner / Portal Admin?</span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              1-Click Admin access to fraud audit center.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAdminLogin}
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs shadow-md transition transform hover:scale-105"
+          >
+            👑 Admin Login
+          </button>
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-3">

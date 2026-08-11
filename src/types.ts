@@ -2,7 +2,7 @@ export type PropertyType = 'Apartment' | 'Villa' | 'Plot' | 'Commercial' | 'Farm
 export type ListingCategory = 'Buy' | 'Rent' | 'Plots' | 'Commercial';
 export type UnitSystem = 'Sq.Ft' | 'Gaj' | 'Bigha';
 
-export type UserRole = 'buyer' | 'seller' | 'agent';
+export type UserRole = 'buyer' | 'seller' | 'agent' | 'admin';
 
 export interface User {
   id: string;
