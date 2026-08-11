@@ -6,6 +6,11 @@ const USER_KEY = 'awaas_up_current_user_v2';
 const LEADS_KEY = 'awaas_up_leads_v2';
 const SAVED_KEY = 'awaas_up_saved_v2';
 
+// Live Cross-Tab & Cross-Session Broadcast Channel
+const propertyBroadcastChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
+  ? new BroadcastChannel('upawas_properties_channel')
+  : null;
+
 export const getStoredProperties = (): Property[] => {
   try {
     const raw = localStorage.getItem(PROPERTIES_KEY);
@@ -49,6 +54,13 @@ export const incrementPropertyViews = (propertyId: string): Property[] => {
 
 export const saveStoredProperties = (properties: Property[]) => {
   localStorage.setItem(PROPERTIES_KEY, JSON.stringify(properties));
+  if (propertyBroadcastChannel) {
+    try {
+      propertyBroadcastChannel.postMessage({ type: 'PROPERTIES_UPDATED', properties });
+    } catch (e) {
+      console.warn('BroadcastChannel error:', e);
+    }
+  }
 };
 
 export const getCurrentUser = (): User | null => {

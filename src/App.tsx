@@ -60,6 +60,21 @@ export function App() {
     saveStoredProperties(properties);
   }, [properties]);
 
+  // Live Cross-Tab Broadcast Channel Sync Listener
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('upawas_properties_channel');
+      channel.onmessage = (event) => {
+        if (event.data && event.data.type === 'PROPERTIES_UPDATED' && event.data.properties) {
+          setProperties(event.data.properties);
+        }
+      };
+      return () => {
+        channel.close();
+      };
+    }
+  }, []);
+
   // Sync Leads to localStorage
   useEffect(() => {
     saveStoredLeads(leads);
