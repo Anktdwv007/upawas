@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, MapPin, ShieldCheck, LandPlot, Sparkles, Building, Layers } from 'lucide-react';
+import { Search, MapPin, ShieldCheck, LandPlot, Sparkles, Building, Layers, PlusCircle } from 'lucide-react';
 import type { ListingCategory } from '../types';
 
 interface HeroSearchProps {
@@ -12,6 +12,7 @@ interface HeroSearchProps {
   onOpenLandConverter: () => void;
   onOpenStampDuty: () => void;
   onOpenBhuNaksha: () => void;
+  onOpenPostProperty: () => void;
 }
 
 const POPULAR_UP_LOCATIONS = [
@@ -34,6 +35,7 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
   onOpenLandConverter,
   onOpenStampDuty,
   onOpenBhuNaksha,
+  onOpenPostProperty,
 }) => {
   return (
     <div className="relative overflow-hidden bg-slate-900 text-white pt-8 pb-12 sm:pt-12 sm:pb-16 px-4 sm:px-6 lg:px-8">
@@ -165,6 +167,34 @@ export const HeroSearch: React.FC<HeroSearchProps> = ({
           >
             <Building className="w-4 h-4 text-indigo-400" />
             <span>UP Stamp Duty Calculator</span>
+          </button>
+        </div>
+
+        {/* 100% Free Property Banner */}
+        <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-900/60 via-indigo-900/60 to-slate-900/80 border border-blue-500/30 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4 text-left shadow-2xl">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 shadow-sm">
+                100% Free Listing
+              </span>
+              <span className="text-xs font-bold text-amber-300">
+                ★ Limited Time Launch Offer
+              </span>
+            </div>
+            <h3 className="text-base sm:text-lg font-extrabold text-white">
+              Are you an Owner, Broker or Builder in UP? Post Your Property for Free!
+            </h3>
+            <p className="text-xs text-slate-300">
+              Zero Commission • Get Direct WhatsApp & Call Leads from Active Buyers • Free 30-Day Featured Upgrade
+            </p>
+          </div>
+
+          <button
+            onClick={onOpenPostProperty}
+            className="w-full sm:w-auto shrink-0 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Post Free Property Now</span>
           </button>
         </div>
 

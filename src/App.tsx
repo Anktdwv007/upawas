@@ -303,6 +303,7 @@ export function App() {
         onOpenLandConverter={() => setIsLandConverterOpen(true)}
         onOpenStampDuty={() => setIsStampDutyOpen(true)}
         onOpenBhuNaksha={() => setIsBhuNakshaOpen(true)}
+        onOpenPostProperty={() => setIsPostPropertyOpen(true)}
       />
 
       {/* Sticky Filter Bar */}
