@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, PlusCircle, Building, MapPin, ShieldCheck, CheckCircle2, Sparkles } from 'lucide-react';
+import { X, PlusCircle, Building, MapPin, ShieldCheck, CheckCircle2, Sparkles, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { Property, PropertyType } from '../types';
 import { UP_CITIES } from '../data/upProperties';
@@ -10,8 +10,6 @@ interface PostPropertyModalProps {
 }
 
 export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, onAddProperty }) => {
-  const [step, setStep] = useState<number>(1);
-
   const [title, setTitle] = useState('');
   const [city, setCity] = useState<'Lucknow' | 'Noida' | 'Greater Noida' | 'Varanasi' | 'Ayodhya' | 'Kanpur' | 'Prayagraj' | 'Agra' | 'Ghaziabad' | 'Gorakhpur'>('Lucknow');
   const [locality, setLocality] = useState('');
@@ -27,8 +25,45 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
   const [agentPhone, setAgentPhone] = useState('');
   const [description, setDescription] = useState('');
 
+  // Image Upload state
+  const [images, setImages] = useState<string[]>([]);
+  const [customUrl, setCustomUrl] = useState('');
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setImages((prev) => [...prev, event.target!.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleAddCustomUrl = () => {
+    if (customUrl.trim()) {
+      setImages((prev) => [...prev, customUrl.trim()]);
+      setCustomUrl('');
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const finalImages = images.length > 0
+      ? images
+      : [
+          '/lucknow_villa.jpg',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+        ];
 
     const newProp: Property = {
       id: 'up-prop-' + Date.now(),
@@ -51,10 +86,7 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
       vastuCompliant,
       bankApproved: true,
       bhuNakshaVerified: true,
-      images: [
-        '/lucknow_villa.jpg',
-        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
-      ],
+      images: finalImages,
       virtualTour360: true,
       featured: true,
       lat: 26.85 + (Math.random() - 0.5) * 0.5,
@@ -85,17 +117,17 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-6">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-6 max-h-[90vh] overflow-y-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4 sticky top-0 bg-white dark:bg-slate-900 z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-600/20">
               <PlusCircle className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-extrabold text-xl text-slate-900 dark:text-white">
-                Post Property Free on AwaasUP
+                Post Property Free on UPAwas
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Reach Lakhs of genuine buyers across Uttar Pradesh & NCR
@@ -114,7 +146,7 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
                 Property Title / Headline *
@@ -223,6 +255,80 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
               </div>
             </div>
 
+            {/* Photo Upload Section */}
+            <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/50 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-xs font-extrabold text-blue-900 dark:text-blue-300">
+                  <ImageIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  Property Photos / Pictures
+                </label>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  {images.length} photo(s) added
+                </span>
+              </div>
+
+              {/* Upload Box */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-blue-400/60 dark:border-blue-600/60 rounded-xl bg-white dark:bg-slate-800/80 hover:bg-blue-50 dark:hover:bg-slate-800 cursor-pointer transition text-center group">
+                  <Upload className="w-6 h-6 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition mb-1" />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                    Upload Photos from Device
+                  </span>
+                  <span className="text-[10px] text-slate-400 mt-0.5">
+                    PNG, JPG, WEBP (Select multiple)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+
+                {/* Paste URL */}
+                <div className="flex flex-col justify-between p-3 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Or Add Image URL
+                  </span>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://example.com/photo.jpg"
+                      value={customUrl}
+                      onChange={(e) => setCustomUrl(e.target.value)}
+                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs outline-none text-slate-900 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomUrl}
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Photo Thumbnails */}
+              {images.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-blue-200 dark:border-blue-900/40">
+                  {images.map((img, idx) => (
+                    <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 group shadow-sm">
+                      <img src={img} alt={`Uploaded ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(idx)}
+                        className="absolute inset-0 bg-slate-950/70 text-rose-400 opacity-0 group-hover:opacity-100 flex items-center justify-center transition"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-semibold">
               <label className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer">
                 <input
@@ -289,3 +395,4 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
     </div>
   );
 };
+
