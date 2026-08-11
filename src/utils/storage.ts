@@ -1,5 +1,6 @@
 import type { Property, User, Lead } from '../types';
 import { INITIAL_PROPERTIES } from '../data/upProperties';
+import { syncAllProperties, saveCloudPropertiesToStorage } from './cloudSync';
 
 const PROPERTIES_KEY = 'awaas_up_properties_v2';
 const USER_KEY = 'awaas_up_current_user_v2';
@@ -14,23 +15,19 @@ const propertyBroadcastChannel = typeof window !== 'undefined' && 'BroadcastChan
 export const getStoredProperties = (): Property[] => {
   try {
     const raw = localStorage.getItem(PROPERTIES_KEY);
+    let base: Property[];
     if (!raw) {
-      const initialized = INITIAL_PROPERTIES.map((p, idx) => ({
+      base = INITIAL_PROPERTIES.map((p, idx) => ({
         ...p,
         viewsCount: p.viewsCount || (1240 + idx * 340),
         viewsToday: p.viewsToday || (42 + (idx % 7) * 12),
         inquiriesCount: p.inquiriesCount || (14 + (idx % 5) * 6),
       }));
-      localStorage.setItem(PROPERTIES_KEY, JSON.stringify(initialized));
-      return initialized;
+      localStorage.setItem(PROPERTIES_KEY, JSON.stringify(base));
+    } else {
+      base = JSON.parse(raw);
     }
-    const parsed: Property[] = JSON.parse(raw);
-    return parsed.map((p, idx) => ({
-      ...p,
-      viewsCount: p.viewsCount || (1240 + idx * 340),
-      viewsToday: p.viewsToday || (42 + (idx % 7) * 12),
-      inquiriesCount: p.inquiriesCount || (14 + (idx % 5) * 6),
-    }));
+    return syncAllProperties(base);
   } catch {
     return INITIAL_PROPERTIES;
   }
@@ -54,6 +51,10 @@ export const incrementPropertyViews = (propertyId: string): Property[] => {
 
 export const saveStoredProperties = (properties: Property[]) => {
   localStorage.setItem(PROPERTIES_KEY, JSON.stringify(properties));
+  const userPosted = properties.filter((p) => !INITIAL_PROPERTIES.some((ip) => ip.id === p.id));
+  if (userPosted.length > 0) {
+    saveCloudPropertiesToStorage(userPosted);
+  }
   if (propertyBroadcastChannel) {
     try {
       propertyBroadcastChannel.postMessage({ type: 'PROPERTIES_UPDATED', properties });
