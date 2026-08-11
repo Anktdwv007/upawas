@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X, PlusCircle, Building, MapPin, ShieldCheck, CheckCircle2, Sparkles, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import L from 'leaflet';
+import { X, PlusCircle, Building, MapPin, ShieldCheck, CheckCircle2, Sparkles, Upload, Image as ImageIcon, Trash2, Navigation, Crosshair } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { Property, PropertyType } from '../types';
 import { UP_CITIES } from '../data/upProperties';
@@ -8,6 +9,19 @@ interface PostPropertyModalProps {
   onClose: () => void;
   onAddProperty: (property: Property) => void;
 }
+
+const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  Lucknow: { lat: 26.8467, lng: 80.9462 },
+  Noida: { lat: 28.5355, lng: 77.391 },
+  'Greater Noida': { lat: 28.4744, lng: 77.504 },
+  Ayodhya: { lat: 26.7922, lng: 82.1998 },
+  Varanasi: { lat: 25.3176, lng: 82.9739 },
+  Kanpur: { lat: 26.4499, lng: 80.3319 },
+  Prayagraj: { lat: 25.4358, lng: 81.8463 },
+  Agra: { lat: 27.1767, lng: 78.0081 },
+  Ghaziabad: { lat: 28.6692, lng: 77.4538 },
+  Gorakhpur: { lat: 26.7606, lng: 83.3732 },
+};
 
 export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, onAddProperty }) => {
   const [listingCategory, setListingCategory] = useState<'Buy' | 'Rent' | 'Plots' | 'Commercial'>('Buy');
@@ -19,6 +33,14 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
   const [bathrooms, setBathrooms] = useState<number>(3);
   const [areaSqFt, setAreaSqFt] = useState<number>(1500);
   const [price, setPrice] = useState<number>(7500000);
+
+  // Map Location Picker State & Refs
+  const [selectedLat, setSelectedLat] = useState<number>(26.8467);
+  const [selectedLng, setSelectedLng] = useState<number>(80.9462);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+
   const [reraApproved, setReraApproved] = useState(true);
   const [reraId, setReraId] = useState('UPRERAPRJ' + Math.floor(10000 + Math.random() * 90000));
   const [vastuCompliant, setVastuCompliant] = useState(true);
@@ -33,6 +55,93 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
 
   const MAX_PHOTOS = 5;
   const MAX_SIZE_MB = 3;
+
+  // Initialize Leaflet Map Location Picker
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    if (!mapInstanceRef.current) {
+      const coords = CITY_COORDINATES[city] || CITY_COORDINATES.Lucknow;
+      const map = L.map(mapContainerRef.current, {
+        center: [coords.lat, coords.lng],
+        zoom: 13,
+        zoomControl: true,
+      });
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; CARTO &copy; OpenStreetMap',
+        maxZoom: 19,
+      }).addTo(map);
+
+      const customIcon = L.divIcon({
+        className: 'custom-map-picker-pin',
+        html: `
+          <div class="cursor-grab active:cursor-grabbing bg-rose-600 text-white p-2 rounded-full shadow-2xl border-2 border-white transform hover:scale-125 transition flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+      });
+
+      const marker = L.marker([coords.lat, coords.lng], {
+        draggable: true,
+        icon: customIcon,
+      }).addTo(map);
+
+      marker.on('dragend', () => {
+        const pos = marker.getLatLng();
+        setSelectedLat(pos.lat);
+        setSelectedLng(pos.lng);
+      });
+
+      map.on('click', (e: L.LeafletMouseEvent) => {
+        marker.setLatLng(e.latlng);
+        setSelectedLat(e.latlng.lat);
+        setSelectedLng(e.latlng.lng);
+      });
+
+      mapInstanceRef.current = map;
+      markerRef.current = marker;
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update map position when UP city dropdown changes
+  useEffect(() => {
+    const coords = CITY_COORDINATES[city] || CITY_COORDINATES.Lucknow;
+    setSelectedLat(coords.lat);
+    setSelectedLng(coords.lng);
+    if (mapInstanceRef.current && markerRef.current) {
+      mapInstanceRef.current.flyTo([coords.lat, coords.lng], 13);
+      markerRef.current.setLatLng([coords.lat, coords.lng]);
+    }
+  }, [city]);
+
+  const handleDetectGPS = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setSelectedLat(latitude);
+          setSelectedLng(longitude);
+          if (mapInstanceRef.current && markerRef.current) {
+            mapInstanceRef.current.flyTo([latitude, longitude], 15);
+            markerRef.current.setLatLng([latitude, longitude]);
+          }
+        },
+        () => {
+          alert('GPS permission denied. You can click anywhere on the map to pin your property location!');
+        }
+      );
+    }
+  };
 
   const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve) => {
@@ -156,8 +265,8 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
       images: finalImages,
       virtualTour360: true,
       featured: true,
-      lat: 26.85 + (Math.random() - 0.5) * 0.5,
-      lng: 80.9 + (Math.random() - 0.5) * 0.5,
+      lat: selectedLat,
+      lng: selectedLng,
       description: description || `Premium ${effectiveType} (${listingCategory}) located in prime location of ${locality}, ${city}, Uttar Pradesh. Fully verified legal title and RERA approved.`,
       amenities: ['24/7 Gated Security', 'Power Backup', 'Water Supply', 'Vastu Compliant'],
       agent: {
@@ -299,6 +408,41 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
                   onChange={(e) => setLocality(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold text-sm outline-none focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
+            </div>
+
+            {/* Interactive Map Location Pin Picker */}
+            <div className="space-y-2 p-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-extrabold text-slate-900 dark:text-white">
+                  <MapPin className="w-4 h-4 text-rose-500" />
+                  <span>Pin Property Location on Map *</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={handleDetectGPS}
+                  className="px-2.5 py-1 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 font-bold text-[11px] border border-blue-500/20 transition flex items-center gap-1"
+                >
+                  <Crosshair className="w-3 h-3" />
+                  <span>Auto-Detect My GPS</span>
+                </button>
+              </div>
+
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Click anywhere on the map or drag the red pin to set the exact property coordinates.
+              </p>
+
+              {/* Map Canvas Container */}
+              <div className="relative w-full h-44 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 shadow-inner">
+                <div ref={mapContainerRef} className="w-full h-full z-10" />
+              </div>
+
+              <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400 px-1 pt-0.5">
+                <span>Selected Coordinates:</span>
+                <span className="font-bold text-slate-900 dark:text-white bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">
+                  {selectedLat.toFixed(4)}° N, {selectedLng.toFixed(4)}° E
+                </span>
               </div>
             </div>
 
