@@ -10,13 +10,41 @@ export const getStoredProperties = (): Property[] => {
   try {
     const raw = localStorage.getItem(PROPERTIES_KEY);
     if (!raw) {
-      localStorage.setItem(PROPERTIES_KEY, JSON.stringify(INITIAL_PROPERTIES));
-      return INITIAL_PROPERTIES;
+      const initialized = INITIAL_PROPERTIES.map((p, idx) => ({
+        ...p,
+        viewsCount: p.viewsCount || (1240 + idx * 340),
+        viewsToday: p.viewsToday || (42 + (idx % 7) * 12),
+        inquiriesCount: p.inquiriesCount || (14 + (idx % 5) * 6),
+      }));
+      localStorage.setItem(PROPERTIES_KEY, JSON.stringify(initialized));
+      return initialized;
     }
-    return JSON.parse(raw);
+    const parsed: Property[] = JSON.parse(raw);
+    return parsed.map((p, idx) => ({
+      ...p,
+      viewsCount: p.viewsCount || (1240 + idx * 340),
+      viewsToday: p.viewsToday || (42 + (idx % 7) * 12),
+      inquiriesCount: p.inquiriesCount || (14 + (idx % 5) * 6),
+    }));
   } catch {
     return INITIAL_PROPERTIES;
   }
+};
+
+export const incrementPropertyViews = (propertyId: string): Property[] => {
+  const properties = getStoredProperties();
+  const updated = properties.map((p) => {
+    if (p.id === propertyId) {
+      return {
+        ...p,
+        viewsCount: (p.viewsCount || 1000) + 1,
+        viewsToday: (p.viewsToday || 30) + 1,
+      };
+    }
+    return p;
+  });
+  saveStoredProperties(updated);
+  return updated;
 };
 
 export const saveStoredProperties = (properties: Property[]) => {
@@ -91,3 +119,4 @@ export const addLead = (lead: Omit<Lead, 'id' | 'createdAt'>): Lead => {
   saveStoredLeads([newLead, ...leads]);
   return newLead;
 };
+

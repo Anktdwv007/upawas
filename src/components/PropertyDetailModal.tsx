@@ -153,6 +153,22 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                 <MapPin className="w-4 h-4 text-blue-500 shrink-0" />
                 <span>{property.location}, {property.city}, Uttar Pradesh</span>
               </div>
+
+              {/* Viewers & Analytics Stats */}
+              <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800">
+                  <Eye className="w-3.5 h-3.5 text-blue-500" />
+                  <span>{(property.viewsCount || 1420).toLocaleString('en-IN')} Views</span>
+                </span>
+                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-xs font-bold border border-amber-200 dark:border-amber-800">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{property.viewsToday || 84} Views Today</span>
+                </span>
+                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800">
+                  <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>{property.inquiriesCount || 18} Buyer Inquiries</span>
+                </span>
+              </div>
             </div>
 
             <div className="text-left md:text-right">

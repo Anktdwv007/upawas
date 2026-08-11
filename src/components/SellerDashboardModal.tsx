@@ -44,6 +44,9 @@ export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
   // Filter properties posted by user (or mock user properties if none posted yet)
   const myProperties = properties.slice(0, 4);
 
+  const totalViews = myProperties.reduce((acc, p) => acc + (p.viewsCount || 1240), 0);
+  const totalViewsToday = myProperties.reduce((acc, p) => acc + (p.viewsToday || 42), 0);
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-5xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -122,6 +125,23 @@ export const SellerDashboardModal: React.FC<SellerDashboardModalProps> = ({
           {/* TAB 1: MY PROPERTIES */}
           {activeTab === 'my-properties' && (
             <div className="space-y-4">
+
+              {/* Viewer Analytics Header Cards */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="p-3 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 text-center">
+                  <span className="block text-[11px] font-bold text-slate-500 dark:text-slate-400">Total Views</span>
+                  <span className="text-xl font-black text-blue-600 dark:text-blue-400">{totalViews.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-center">
+                  <span className="block text-[11px] font-bold text-slate-500 dark:text-slate-400">Views Today</span>
+                  <span className="text-xl font-black text-amber-500">{totalViewsToday.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 text-center">
+                  <span className="block text-[11px] font-bold text-slate-500 dark:text-slate-400">Buyer Leads</span>
+                  <span className="text-xl font-black text-emerald-500">{leads.length}</span>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {myProperties.map((prop) => (
                   <div

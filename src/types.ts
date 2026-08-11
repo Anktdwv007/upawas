@@ -80,6 +80,11 @@ export interface Property {
     avatar: string;
   };
   
+  // Analytics & Viewers Tracking
+  viewsCount?: number;
+  viewsToday?: number;
+  inquiriesCount?: number;
+
   createdAt: string;
 }
 

@@ -25,33 +25,89 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
   const [agentPhone, setAgentPhone] = useState('');
   const [description, setDescription] = useState('');
 
-  // Image Upload state
+  // Image Upload state & restrictions
   const [images, setImages] = useState<string[]>([]);
   const [customUrl, setCustomUrl] = useState('');
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const MAX_PHOTOS = 5;
+  const MAX_SIZE_MB = 3;
 
-    Array.from(files).forEach((file) => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
-          setImages((prev) => [...prev, event.target!.result as string]);
-        }
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     });
   };
 
-  const handleAddCustomUrl = () => {
-    if (customUrl.trim()) {
-      setImages((prev) => [...prev, customUrl.trim()]);
-      setCustomUrl('');
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (images.length + files.length > MAX_PHOTOS) {
+      setUploadError(`Maximum ${MAX_PHOTOS} photos allowed per listing to maintain fast load times.`);
+      return;
+    }
+
+    const fileList = Array.from(files);
+    for (const file of fileList) {
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        setUploadError(`File "${file.name}" exceeds the ${MAX_SIZE_MB}MB size limit.`);
+        return;
+      }
+    }
+
+    for (const file of fileList) {
+      const compressed = await compressImage(file);
+      setImages((prev) => [...prev, compressed]);
     }
   };
 
+  const handleAddCustomUrl = () => {
+    setUploadError(null);
+    if (!customUrl.trim()) return;
+
+    if (images.length >= MAX_PHOTOS) {
+      setUploadError(`Maximum ${MAX_PHOTOS} photos allowed per listing.`);
+      return;
+    }
+
+    setImages((prev) => [...prev, customUrl.trim()]);
+    setCustomUrl('');
+  };
+
   const handleRemoveImage = (index: number) => {
+    setUploadError(null);
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -262,10 +318,17 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
                   <ImageIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   Property Photos / Pictures
                 </label>
-                <span className="text-[11px] text-slate-500 font-medium">
-                  {images.length} photo(s) added
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                  {images.length} / {MAX_PHOTOS} photos (Max 3MB each)
                 </span>
               </div>
+
+              {uploadError && (
+                <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center justify-between">
+                  <span>⚠️ {uploadError}</span>
+                  <button type="button" onClick={() => setUploadError(null)} className="text-rose-500 hover:underline text-[10px]">Dismiss</button>
+                </div>
+              )}
 
               {/* Upload Box */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -275,7 +338,7 @@ export const PostPropertyModal: React.FC<PostPropertyModalProps> = ({ onClose, o
                     Upload Photos from Device
                   </span>
                   <span className="text-[10px] text-slate-400 mt-0.5">
-                    PNG, JPG, WEBP (Select multiple)
+                    PNG, JPG (Auto-compressed to 1200px)
                   </span>
                   <input
                     type="file"

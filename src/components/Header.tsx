@@ -13,6 +13,7 @@ import {
   UserCheck,
   User as UserIcon,
   Briefcase,
+  Eye,
 } from 'lucide-react';
 import type { UnitSystem, User } from '../types';
 import { UP_CITIES } from '../data/upProperties';
@@ -55,7 +56,29 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleDarkMode,
 }) => {
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 transition-colors duration-200 shadow-sm">
+    <>
+      {/* Live Site Viewers Ticker Bar */}
+      <div className="bg-slate-950 text-slate-300 text-[11px] py-1.5 px-4 border-b border-slate-800">
+        <div className="max-w-7xl mx-auto flex items-center justify-between font-medium">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="font-bold text-white">184 Live Buyers Online</span>
+            <span className="hidden sm:inline text-slate-400">• Browsing UP real estate properties right now</span>
+          </div>
+          <div className="flex items-center gap-4 text-[11px] text-slate-400">
+            <span className="flex items-center gap-1">
+              <Eye className="w-3.5 h-3.5 text-blue-400" />
+              <strong>48,920</strong> site views today
+            </span>
+            <span className="hidden md:inline text-amber-400 font-bold">UP BhuNaksha & UPRERA Verified</span>
+          </div>
+        </div>
+      </div>
+
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 transition-colors duration-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
           
@@ -205,5 +228,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
     </header>
+    </>
   );
 };

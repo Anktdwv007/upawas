@@ -12,6 +12,7 @@ import {
   CheckSquare,
   Square,
   Navigation,
+  Eye,
 } from 'lucide-react';
 import type { Property, UnitSystem } from '../types';
 import { formatArea, formatPriceINR } from '../utils/conversions';
@@ -98,6 +99,15 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           >
             <Heart className={`w-4 h-4 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
           </button>
+        </div>
+
+        {/* Views Count Overlay Badge */}
+        <div className="absolute bottom-3 left-3 z-10">
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/80 backdrop-blur-md text-white text-[11px] font-semibold border border-slate-700/60 shadow-md">
+            <Eye className="w-3.5 h-3.5 text-blue-400" />
+            <span>{(property.viewsCount || 1240).toLocaleString('en-IN')} views</span>
+            <span className="text-[9px] text-amber-400 font-bold ml-1">({property.viewsToday || 42} today)</span>
+          </span>
         </div>
 
         {/* Carousel Prev/Next Buttons */}

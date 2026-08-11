@@ -8,6 +8,7 @@ import {
   getStoredLeads,
   saveStoredLeads,
   addLead,
+  incrementPropertyViews,
 } from './utils/storage';
 import { Header } from './components/Header';
 import { HeroSearch } from './components/HeroSearch';
@@ -253,6 +254,13 @@ export function App() {
     return properties.filter((p) => savedIds.includes(p.id));
   }, [properties, savedIds]);
 
+  const handleSelectProperty = (property: Property) => {
+    const updatedProps = incrementPropertyViews(property.id);
+    setProperties(updatedProps);
+    const updatedItem = updatedProps.find((p) => p.id === property.id) || property;
+    setSelectedProperty(updatedItem);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 flex flex-col font-sans">
       
@@ -329,7 +337,7 @@ export function App() {
                   onToggleSave={handleToggleSave}
                   isCompared={comparedProperties.some((cp) => cp.id === prop.id)}
                   onToggleCompare={handleToggleCompare}
-                  onSelectProperty={setSelectedProperty}
+                  onSelectProperty={handleSelectProperty}
                 />
               ))}
             </div>
@@ -343,7 +351,7 @@ export function App() {
               <InteractiveMap
                 properties={filteredProperties}
                 unitSystem={filters.unitSystem}
-                onSelectProperty={setSelectedProperty}
+                onSelectProperty={handleSelectProperty}
                 selectedCity={filters.city}
               />
             </div>
@@ -363,11 +371,10 @@ export function App() {
                   onToggleSave={handleToggleSave}
                   isCompared={comparedProperties.some((cp) => cp.id === prop.id)}
                   onToggleCompare={handleToggleCompare}
-                  onSelectProperty={setSelectedProperty}
+                  onSelectProperty={handleSelectProperty}
                 />
               ))}
             </div>
-
           </div>
         )}
 
